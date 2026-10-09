@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CocktailCategory {
+  SHOT
+  LONG_DRINK
+  @@map("cocktail_category")
+}
+
+model Ingredient {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique @db.VarChar(100)
+  description String         @db.Text
+  isAlcohol   Boolean        @map("is_alcohol")
+  imageUrl    String         @db.VarChar(255) @map("image_url")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  cocktails   CocktailItem[]
+  @@map("ingredients")
+}
+
+model Cocktail {
+  id           Int              @id @default(autoincrement())
+  name         String           @db.VarChar(100)
+  category     CocktailCategory
+  instructions String           @db.Text
+  createdAt    DateTime         @default(now()) @map("created_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+  ingredients  CocktailItem[]
+  @@map("cocktails")
+}
+
+model CocktailItem {
+  cocktailId   Int        @map("cocktail_id")
+  ingredientId Int        @map("ingredient_id")
+  amount       Decimal    @db.Decimal(10, 2)
+  unit         String     @db.VarChar(20)
+  cocktail     Cocktail   @relation(fields: [cocktailId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+  @@id([cocktailId, ingredientId])
+  @@map("cocktail_items")
+}
