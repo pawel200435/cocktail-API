@@ -28,7 +28,7 @@ export class QueryIngredientDto {
 
   @IsOptional()
   @IsString()
-  @ApiPropertyOptional({ description: 'Search term for filtering ingredients by name', example: 'vodka' })
+  @ApiPropertyOptional({ description: 'Search term for filtering ingredients by name or description', example: 'vodka' })
   search?: string;
 
   @IsOptional()

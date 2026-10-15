@@ -98,7 +98,6 @@ export class CocktailsService {
         where,
         skip,
         take: limit,
-        orderBy: {name: 'asc'},
         include: this.cocktailInclude,
       }),
       this.prisma.cocktail.count({where}),
