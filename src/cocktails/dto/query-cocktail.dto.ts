@@ -1,6 +1,8 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
-import { IsBoolean, IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { IsBoolean, IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from "class-validator";
+import { Cocktail } from "../entities/cocktail.entity";
+import { CocktailCategory } from "../../generated/prisma/browser";
 
 export class QueryCocktailDto {
 
@@ -23,6 +25,11 @@ export class QueryCocktailDto {
     @IsString()
     @ApiPropertyOptional({description: "Search term for filtering cocktails by name or category", example: "Margarita"})
     search?: string;
+
+    @IsOptional()
+    @IsEnum(CocktailCategory)
+    @ApiPropertyOptional({description: "Filter by cocktail category", example: "SHOT", enum: CocktailCategory})
+    category?: CocktailCategory;
 
     @IsOptional()
     @IsInt()
