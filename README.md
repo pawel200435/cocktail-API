@@ -52,8 +52,9 @@ Aplikacja to w pełni funkcjonalne REST API do zarządzania bazą koktajli i ich
 - <b> Pełny CRUD </b>
 - <b> Paginacja </b>
 - <b> Blokada usunięcia składnika </b> - jeśli jest on powiązany z jakimkolwiek istniejącym koktajlem
-- <b> Wyszukiwanie składników po nazwie oraz opisie </b>
+- <b> Wyszukiwanie składników po nazwie lub opisie </b>
 - <b> Filtrowanie składników alkoholowych i bezalkoholowych </b>
+- <b>Możliwość sortowania po nazwie lub dacie utworzenia oraz kierunku</b>
 - <b> Wszystkie filtry można stosować jednocześnie </b>
 
 ### 3. Zarządzanie koktajlami i przepisami (COCKTAILS)
@@ -62,10 +63,13 @@ Aplikacja to w pełni funkcjonalne REST API do zarządzania bazą koktajli i ich
 - <b> Paginacja </b>
 - <b> Obsługa tabeli CocktailItems zawierającej amount i unit </b>
 - <b> Przypisywanie tworzonego koktajlu do zalogowanego użytkownika</b>
-- <b> Filtorwanie po kategorii koktajlu, nazwie oraz instrukcji</b>
+- <b> Filtorwanie po kategorii koktajlu, nazwie lub instrukcji</b>
 - <b> Filtorwanie koktajli po id lub nazwie składnika</b>
 - <b> Filtorwanie koktajli alkoholowych i bezalkoholowych</b>
-- <b> Wszystkie filtry można stosować jednocześnie </b>
+- <b> Filtorwanie koktajli po adresie email autora </b>
+- <b> Sortowanie wyników po nazwie lub dacie utworzenia w wybranym kierunku </b>
+- <b> Wszystkie filtry można stosować jednocześnie </b><br>
+  `GET /cocktails?category=LONG_DRINK&ingredientName=mięta&isAlcoholic=false&authorEmail=user1@solvro.pl`
 
 <br>
 
