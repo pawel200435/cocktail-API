@@ -6,12 +6,13 @@ import {
 } from '@nestjs/common';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
-import { QueryCocktailDto } from './dto/query-cocktail.dto';
+import { CocktailSortBy, QueryCocktailDto } from './dto/query-cocktail.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '../generated/prisma/browser';
 import { CocktailCategory } from '../generated/prisma/enums';
 import { CocktailIngredientItemDto } from './dto/cocktail-ingredient-item.dto';
 import { Role } from '../generated/prisma/client';
+import { SortDirection } from '../ingredients/dto/query-ingredient.dto';
 
 @Injectable()
 export class CocktailsService {
@@ -60,24 +61,32 @@ export class CocktailsService {
     const {
       page = 1,
       limit = 10,
-      search,
+      name,
+      instruction,
       category,
       ingredientId,
       ingredientName,
       isAlcoholic,
+      sortBy = CocktailSortBy.NAME,
+      sortDirection = SortDirection.ASC,
     } = query;
     const skip = (page - 1) * limit;
-    const where: Prisma.CocktailWhereInput = {};
+    const andConditions: Prisma.CocktailWhereInput[] = [];
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { instructions: { contains: search, mode: 'insensitive' } },
-      ];
+    if (name) {
+      andConditions.push({
+        name: { contains: name, mode: 'insensitive' },
+      });
+    }
+
+    if (instruction) {
+      andConditions.push({
+        instructions: { contains: instruction, mode: 'insensitive' },
+      });
     }
 
     if (category) {
-      where.category = category;
+      andConditions.push({ category });
     }
 
     // Filter by ingredientId or ingredientName
@@ -92,33 +101,40 @@ export class CocktailsService {
     }
 
     if (ingredientFilters.length > 0) {
-      where.ingredients = {
-        some: {
-          AND: ingredientFilters,
+      andConditions.push({
+        ingredients: {
+          some: {
+            AND: ingredientFilters,
+          },
         },
-      };
+      });
     }
 
     // Filter by alcohol
     if (isAlcoholic !== undefined) {
       if (isAlcoholic) {
-        where.ingredients = {
-          ...where.ingredients,
-          some: { ingredient: { isAlcohol: true } },
-        };
+        andConditions.push({
+          ingredients: {
+            some: { ingredient: { isAlcohol: true } },
+          },
+        });
       } else {
-        where.ingredients = {
-          ...where.ingredients,
-          none: { ingredient: { isAlcohol: true } },
-        };
+        andConditions.push({
+          ingredients: {
+            none: { ingredient: { isAlcohol: true } },
+          },
+        });
       }
     }
 
+    const where: Prisma.CocktailWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
+    
     const [data, total] = await Promise.all([
       this.prisma.cocktail.findMany({
         where,
         skip,
         take: limit,
+        orderBy: { [sortBy]: sortDirection },
         include: this.cocktailInclude,
       }),
       this.prisma.cocktail.count({ where }),
