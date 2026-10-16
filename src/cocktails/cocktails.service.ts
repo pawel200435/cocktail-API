@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,10 +8,10 @@ import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 import { QueryCocktailDto } from './dto/query-cocktail.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { NotFoundError } from 'rxjs';
 import { Prisma } from '../generated/prisma/browser';
 import { CocktailCategory } from '../generated/prisma/enums';
 import { CocktailIngredientItemDto } from './dto/cocktail-ingredient-item.dto';
+import { Role } from '../generated/prisma/client';
 
 @Injectable()
 export class CocktailsService {
@@ -34,13 +35,14 @@ export class CocktailsService {
     },
   };
 
-  async create(createCocktailDto: CreateCocktailDto) {
+  async create(createCocktailDto: CreateCocktailDto, userId: number) {
     const { ingredients, ...cocktailData } = createCocktailDto;
     await this.validateIngredients(ingredients);
 
     return this.prisma.cocktail.create({
       data: {
         ...cocktailData,
+        user:{ connect: { id: userId } },
         ingredients: {
           create: ingredients.map((item) => ({
             amount: item.amount,
@@ -146,8 +148,10 @@ export class CocktailsService {
     return cocktail;
   }
 
-  async update(id: number, updateCocktailDto: UpdateCocktailDto) {
-    await this.findOne(id);
+  async update(id: number, updateCocktailDto: UpdateCocktailDto, currentUserId: number, currentUserRole: Role) {
+    const existingCocktail = await this.findOne(id);
+    //Check if the current user is the owner of the cocktail or an admin
+    this.checkOwnershipOrAdmin(existingCocktail.userId, currentUserId, currentUserRole);
 
     const { ingredients, ...cocktailData } = updateCocktailDto;
     const dataToUpdate: Prisma.CocktailUpdateInput = {
@@ -176,8 +180,10 @@ export class CocktailsService {
     });
   }
 
-  async remove(id: number) {
-    await this.findOne(id);
+  async remove(id: number, currentUserId: number, currentUserRole: Role) {
+    const existingCocktail = await this.findOne(id);
+    //Check if the current user is the owner of the cocktail or an admin
+    this.checkOwnershipOrAdmin(existingCocktail.userId, currentUserId, currentUserRole);
 
     await this.prisma.cocktail.delete({
       where: { id },
@@ -204,6 +210,16 @@ export class CocktailsService {
       throw new NotFoundException(
         'One or more ingredient IDs do not exist in the database.',
       );
+    }
+  }
+
+  private checkOwnershipOrAdmin(cocktailUserId: number, currentUserId: number, currentUserRole: string) {
+    if (currentUserRole === Role.ADMIN) {
+      return;
+    }
+
+    if (cocktailUserId !== currentUserId){
+      throw new ForbiddenException('You do not have permission to modify this cocktail');
     }
   }
 }

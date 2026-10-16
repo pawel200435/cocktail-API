@@ -10,12 +10,15 @@ import {
   HttpCode,
   HttpStatus,
   ParseIntPipe,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 import { QueryCocktailDto } from './dto/query-cocktail.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('cocktails')
 @Controller('cocktails')
@@ -23,10 +26,12 @@ export class CocktailsController {
   constructor(private readonly cocktailsService: CocktailsService) {}
 
   @Post()
+  @UseGuards(AuthGuard('jwt'))
   @HttpCode(HttpStatus.CREATED)
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new cocktail' })
-  create(@Body() createCocktailDto: CreateCocktailDto) {
-    return this.cocktailsService.create(createCocktailDto);
+  create(@Body() createCocktailDto: CreateCocktailDto, @Req() req: any) {
+    return this.cocktailsService.create(createCocktailDto, req.user.id);
   }
 
   @Get()
@@ -42,18 +47,23 @@ export class CocktailsController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Update a cocktail by its ID' })
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateCocktailDto: UpdateCocktailDto,
+    @Req() req: any
   ) {
-    return this.cocktailsService.update(id, updateCocktailDto);
+    return this.cocktailsService.update(id, updateCocktailDto, req.user.id, req.user.role);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Delete a cocktail by its ID' })
-  remove(@Param('id', ParseIntPipe) id: number) {
-    return this.cocktailsService.remove(id);
+  remove(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.cocktailsService.remove(id, req.user.id, req.user.role);
   }
 }
