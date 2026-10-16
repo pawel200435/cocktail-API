@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
 import { QueryCocktailDto } from './dto/query-cocktail.dto';
@@ -10,7 +14,6 @@ import { CocktailIngredientItemDto } from './dto/cocktail-ingredient-item.dto';
 
 @Injectable()
 export class CocktailsService {
-
   constructor(private prisma: PrismaService) {}
 
   private readonly cocktailInclude = {
@@ -32,7 +35,7 @@ export class CocktailsService {
   };
 
   async create(createCocktailDto: CreateCocktailDto) {
-    const {ingredients, ...cocktailData} = createCocktailDto;
+    const { ingredients, ...cocktailData } = createCocktailDto;
     await this.validateIngredients(ingredients);
 
     return this.prisma.cocktail.create({
@@ -46,13 +49,21 @@ export class CocktailsService {
               connect: { id: item.ingredientId },
             },
           })),
-        }
+        },
       },
-    })
+    });
   }
 
   async findAll(query: QueryCocktailDto) {
-    const { page=1, limit=10, search, category, ingredientId, ingredientName, isAlcoholic } = query;
+    const {
+      page = 1,
+      limit = 10,
+      search,
+      category,
+      ingredientId,
+      ingredientName,
+      isAlcoholic,
+    } = query;
     const skip = (page - 1) * limit;
     const where: Prisma.CocktailWhereInput = {};
 
@@ -66,30 +77,38 @@ export class CocktailsService {
     if (category) {
       where.category = category;
     }
-    
+
     // Filter by ingredientId or ingredientName
     const ingredientFilters: Prisma.CocktailItemWhereInput[] = [];
     if (ingredientId) {
       ingredientFilters.push({ ingredientId });
     }
     if (ingredientName) {
-      ingredientFilters.push({ ingredient: { name: { contains: ingredientName, mode: 'insensitive' } } });
+      ingredientFilters.push({
+        ingredient: { name: { contains: ingredientName, mode: 'insensitive' } },
+      });
     }
 
     if (ingredientFilters.length > 0) {
       where.ingredients = {
         some: {
           AND: ingredientFilters,
-        }
-      }
+        },
+      };
     }
 
     // Filter by alcohol
-    if (isAlcoholic !== undefined){
-      if(isAlcoholic){
-        where.ingredients = {...where.ingredients, some: {ingredient: {isAlcohol: true}}}
-      } else{
-        where.ingredients = {...where.ingredients, none: {ingredient: {isAlcohol: true}}}
+    if (isAlcoholic !== undefined) {
+      if (isAlcoholic) {
+        where.ingredients = {
+          ...where.ingredients,
+          some: { ingredient: { isAlcohol: true } },
+        };
+      } else {
+        where.ingredients = {
+          ...where.ingredients,
+          none: { ingredient: { isAlcohol: true } },
+        };
       }
     }
 
@@ -100,7 +119,7 @@ export class CocktailsService {
         take: limit,
         include: this.cocktailInclude,
       }),
-      this.prisma.cocktail.count({where}),
+      this.prisma.cocktail.count({ where }),
     ]);
 
     return {
@@ -109,18 +128,18 @@ export class CocktailsService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total/limit),
-      }
-    }
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: number) {
     const cocktail = await this.prisma.cocktail.findUnique({
-      where: {id},
+      where: { id },
       include: this.cocktailInclude,
-    })
+    });
 
-    if(!cocktail){
+    if (!cocktail) {
       throw new NotFoundException(`Cocktail with ID ${id} not found`);
     }
 
@@ -130,14 +149,14 @@ export class CocktailsService {
   async update(id: number, updateCocktailDto: UpdateCocktailDto) {
     await this.findOne(id);
 
-    const {ingredients, ...cocktailData} = updateCocktailDto;
+    const { ingredients, ...cocktailData } = updateCocktailDto;
     const dataToUpdate: Prisma.CocktailUpdateInput = {
       ...cocktailData,
     };
 
-    if(ingredients){
+    if (ingredients) {
       await this.validateIngredients(ingredients);
-      
+
       dataToUpdate.ingredients = {
         deleteMany: {}, // Remove existing ingredients
         create: ingredients.map((item) => ({
@@ -151,7 +170,7 @@ export class CocktailsService {
     }
 
     return this.prisma.cocktail.update({
-      where: {id},
+      where: { id },
       data: dataToUpdate,
       include: this.cocktailInclude,
     });
@@ -159,29 +178,32 @@ export class CocktailsService {
 
   async remove(id: number) {
     await this.findOne(id);
-    
+
     await this.prisma.cocktail.delete({
-      where: {id}
+      where: { id },
     });
   }
 
-
-
   private async validateIngredients(ingredients: CocktailIngredientItemDto[]) {
-  const ingredientIds = ingredients.map((item) => item.ingredientId); // Extract ingredient IDs from the ingredients array
-  const uniqueIds = new Set(ingredientIds); // Remove duplicates
+    const ingredientIds = ingredients.map((item) => item.ingredientId); // Extract ingredient IDs from the ingredients array
+    const uniqueIds = new Set(ingredientIds); // Remove duplicates
 
-  if (uniqueIds.size !== ingredientIds.length) { // Check if there are duplicates
-    throw new BadRequestException('Duplicate ingredient IDs are not allowed.');
-  }
+    if (uniqueIds.size !== ingredientIds.length) {
+      // Check if there are duplicates
+      throw new BadRequestException(
+        'Duplicate ingredient IDs are not allowed.',
+      );
+    }
 
-  //Check if all ingredient IDs exist in the database
-  const existingIngredients = await this.prisma.ingredient.findMany({
-    where: { id: { in: ingredientIds } },
-    select: { id: true },
-  });
-  if (existingIngredients.length !== ingredientIds.length) {
-    throw new NotFoundException('One or more ingredient IDs do not exist in the database.');
+    //Check if all ingredient IDs exist in the database
+    const existingIngredients = await this.prisma.ingredient.findMany({
+      where: { id: { in: ingredientIds } },
+      select: { id: true },
+    });
+    if (existingIngredients.length !== ingredientIds.length) {
+      throw new NotFoundException(
+        'One or more ingredient IDs do not exist in the database.',
+      );
+    }
   }
-}
 }

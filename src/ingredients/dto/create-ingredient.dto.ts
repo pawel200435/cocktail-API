@@ -16,17 +16,26 @@ export class CreateIngredientDto {
 
   @IsString()
   @IsNotEmpty()
-  @ApiProperty({ description: 'Description of the ingredient', example: 'A clear, colorless spirit' })
+  @ApiProperty({
+    description: 'Description of the ingredient',
+    example: 'A clear, colorless spirit',
+  })
   description!: string;
 
   @IsBoolean()
-  @ApiProperty({ description: 'Indicates if the ingredient is alcoholic', example: true })
+  @ApiProperty({
+    description: 'Indicates if the ingredient is alcoholic',
+    example: true,
+  })
   isAlcohol!: boolean;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
   @IsUrl({}, { message: 'imageUrl must be a valid URL' })
-  @ApiProperty({ description: 'URL of the ingredient image', example: 'https://example.com/vodka.jpg' })
+  @ApiProperty({
+    description: 'URL of the ingredient image',
+    example: 'https://example.com/vodka.jpg',
+  })
   imageUrl!: string;
 }

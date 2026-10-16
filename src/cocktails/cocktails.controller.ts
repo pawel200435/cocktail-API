@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, HttpCode, HttpStatus, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  HttpCode,
+  HttpStatus,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { CocktailsService } from './cocktails.service';
 import { CreateCocktailDto } from './dto/create-cocktail.dto';
 import { UpdateCocktailDto } from './dto/update-cocktail.dto';
@@ -31,7 +43,10 @@ export class CocktailsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a cocktail by its ID' })
-  update(@Param('id', ParseIntPipe) id: number, @Body() updateCocktailDto: UpdateCocktailDto) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCocktailDto: UpdateCocktailDto,
+  ) {
     return this.cocktailsService.update(id, updateCocktailDto);
   }
 
