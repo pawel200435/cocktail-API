@@ -71,6 +71,14 @@ Aplikacja to w pełni funkcjonalne REST API do zarządzania bazą koktajli i ich
 - <b> Wszystkie filtry można stosować jednocześnie </b><br>
   `GET /cocktails?category=LONG_DRINK&ingredientName=mięta&isAlcoholic=false&authorEmail=user1@solvro.pl`
 
+### 4. Automatyczne seedowanie bazy danych - npx prisma db seed
+
+- 3 konta testowe: admin, user1 (autor drinków), user2
+- 5 koktajli z różnymi składnikami i kategoriami
+- 13 składników (zarówno alkoholowych jak i bezalkoholowych)
+
+### 5. Dokumentacja Swagger/OpenAPI pod adresem /api z obsługą autoryzacji tokenem JWT
+
 <br>
 
 ## Uruchomienie projektu
