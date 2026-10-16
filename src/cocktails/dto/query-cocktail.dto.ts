@@ -94,6 +94,14 @@ export class QueryCocktailDto {
   isAlcoholic?: boolean;
 
   @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    description: 'Filter by cocktail author email',
+    example: 'user1@solvro.pl'
+  })
+  authorEmail?: string;
+
+  @IsOptional()
   @IsEnum(CocktailSortBy)
   @ApiPropertyOptional({ enum: CocktailSortBy, default: CocktailSortBy.NAME })
   sortBy?: CocktailSortBy = CocktailSortBy.NAME;

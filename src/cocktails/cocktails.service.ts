@@ -19,6 +19,13 @@ export class CocktailsService {
   constructor(private prisma: PrismaService) {}
 
   private readonly cocktailInclude = {
+    user: {
+      select: {
+        id: true,
+        email: true,
+        role: true,
+      },
+    },
     ingredients: {
       select: {
         amount: true,
@@ -67,6 +74,7 @@ export class CocktailsService {
       ingredientId,
       ingredientName,
       isAlcoholic,
+      authorEmail,
       sortBy = CocktailSortBy.NAME,
       sortDirection = SortDirection.ASC,
     } = query;
@@ -125,6 +133,14 @@ export class CocktailsService {
           },
         });
       }
+    }
+
+    if (authorEmail) {
+      andConditions.push({
+        user: {
+          email: { contains: authorEmail.trim(), mode: 'insensitive' },
+        },
+      });
     }
 
     const where: Prisma.CocktailWhereInput = andConditions.length > 0 ? { AND: andConditions } : {};
