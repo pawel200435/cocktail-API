@@ -22,21 +22,50 @@ Strona: https://solvro.pwr.edu.pl/pl/
 Github: https://github.com/solvro
 
 Aplikacja to w pełni funkcjonalne REST API do zarządzania bazą koktajli i ich składników, zaimplementowane w oparciu o framework **NestJS**, bazę danych **PostgreSQL** oraz ORM **Prisma**.
-<br><br>
+<br>
 
 ## Technologie
 
 - **Framework:** NestJS
 - **Baza danych:** PostgreSQL
 - **ORM:** Prisma
-- **Walidacja danych:** `class-validator`, `class-transformer`
+- **Uwierzytelnianie i Bezpieczeństwo:** Passport, Passport-JWT, bcrypt
+- **Walidacja danych:** class-validator, class-transformer
 - **Dokumentacja API:** Swagger / OpenAPI
-
-<br>
 
 ## Schemat bazy danych
 
 <img src='./docs/screenshots/cocktails_DB_diagram.png' width=700></img>
+
+<br>
+
+## Funkcjonalności API
+
+### 1. Uwietrzlnianie i autoryzacja
+
+- <b> Rejestracja użytkowników </b> - walidacją adresu email i haszowaniem hasła poprzez bcrypt.
+- <b> Logowanie użytkowników </b> - sprawdzenie hasła, generowanie tokenów JWT
+- <b> Role użytkowników i autoryzacja </b> - publiczny dostępn do przeglądania (GET), dodawanie nowych koktajli tylko dla zalogowanych, powiązanie koktajlu z autorem, tylko autor lub admin mogą usuwać/edytować dany koktajl.
+
+### 2. Zarządzanie składnikami (INGREDIENTS)
+
+- <b> Pełny CRUD </b>
+- <b> Paginacja </b>
+- <b> Blokada usunięcia składnika </b> - jeśli jest on powiązany z jakimkolwiek istniejącym koktajlem
+- <b> Wyszukiwanie składników po nazwie oraz opisie </b>
+- <b> Filtrowanie składników alkoholowych i bezalkoholowych </b>
+- <b> Wszystkie filtry można stosować jednocześnie </b>
+
+### 3. Zarządzanie koktajlami i przepisami (COCKTAILS)
+
+- <b> Pełny CRUD </b>
+- <b> Paginacja </b>
+- <b> Obsługa tabeli CocktailItems zawierającej amount i unit </b>
+- <b> Przypisywanie tworzonego koktajlu do zalogowanego użytkownika</b>
+- <b> Filtorwanie po kategorii koktajlu, nazwie oraz instrukcji</b>
+- <b> Filtorwanie koktajli po id lub nazwie składnika</b>
+- <b> Filtorwanie koktajli alkoholowych i bezalkoholowych</b>
+- <b> Wszystkie filtry można stosować jednocześnie </b>
 
 <br>
 
