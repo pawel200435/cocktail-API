@@ -36,7 +36,7 @@ Aplikacja to w pełni funkcjonalne REST API do zarządzania bazą koktajli i ich
 
 ## Schemat bazy danych
 
-<img src='./docs/screenshots/coctails_DB_diagram.png' width=700></img>
+<img src='./docs/screenshots/cocktails_DB_diagram.png' width=700></img>
 
 <br>
 

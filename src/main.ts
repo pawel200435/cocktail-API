@@ -19,6 +19,18 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('ingredients', 'Ingredients management')
     .addTag('cocktails', 'Cocktail management')
+    .addTag('auth', 'Authentication and authorization')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'JWT-auth',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

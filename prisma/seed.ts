@@ -1,5 +1,7 @@
 import { CocktailCategory, PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import bcrypt from 'bcrypt';
+import { Role } from '../src/generated/prisma/enums';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -16,7 +18,37 @@ async function main() {
   await prisma.cocktailItem.deleteMany();
   await prisma.cocktail.deleteMany();
   await prisma.ingredient.deleteMany();
+  await prisma.user.deleteMany();
 
+  //Create users
+  const defaultPassword = await bcrypt.hash('Password123!', 10);
+  const admin = await prisma.user.create({
+    data: {
+      email: 'admin@solvro.pl',
+      password: defaultPassword,
+      role: Role.ADMIN,
+    },
+  });
+
+  const user1 = await prisma.user.create({
+    data: {
+      email: 'user1@solvro.pl',
+      password: defaultPassword,
+      role: Role.USER,
+    },
+  });
+
+  const user2 = await prisma.user.create({
+    data: {
+      email: 'user2@solvro.pl',
+      password: defaultPassword,
+      role: Role.USER,
+    },
+  });
+  console.log(`Seeded users: ${admin.email}, ${user1.email}, ${user2.email} with password 'Password123!'`);
+
+
+  //Create ingredients and cocktails
   const ingredientMaps = new Map<string, number>();
   for (const item of ingredientsData) {
     const created = await prisma.ingredient.create({ data: item });
@@ -30,6 +62,7 @@ async function main() {
             name: cocktail.name,
             category: cocktail.category,
             instructions: cocktail.instructions,
+            userId: user1.id, //Assigning the user1 as the creator of all cocktails
             ingredients: {
                 create: cocktail.items.map((item) => ({
                     amount: item.amount,
