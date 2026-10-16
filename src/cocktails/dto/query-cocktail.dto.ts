@@ -3,15 +3,20 @@ import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
-  IsIn,
   IsInt,
   IsOptional,
   IsString,
   Max,
   Min,
 } from 'class-validator';
-import { Cocktail } from '../entities/cocktail.entity';
 import { CocktailCategory } from '../../generated/prisma/browser';
+import { Transform } from 'class-transformer';
+import { SortDirection } from '../../ingredients/dto/query-ingredient.dto';
+
+export enum CocktailSortBy {
+  NAME = 'name',
+  CREATED_AT = 'createdAt',
+}
 
 export class QueryCocktailDto {
   @IsInt()
@@ -38,10 +43,18 @@ export class QueryCocktailDto {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional({
-    description: 'Search term for filtering cocktails by name or category',
-    example: 'Margarita',
+    description: 'Filter by cocktail name (case-insensitive)',
+    example: 'Mojito',
   })
-  search?: string;
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({
+    description: 'Filter by cocktail instructions (case-insensitive)',
+    example: 'delikatnie wymieszaj',
+  })
+  instruction?: string;
 
   @IsOptional()
   @IsEnum(CocktailCategory)
@@ -68,11 +81,25 @@ export class QueryCocktailDto {
   ingredientName?: string;
 
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+    })
   @IsBoolean()
   @ApiPropertyOptional({
     description: 'Filter by alcoholic or non-alcoholic cocktails',
     example: true,
   })
   isAlcoholic?: boolean;
+
+  @IsOptional()
+  @IsEnum(CocktailSortBy)
+  @ApiPropertyOptional({ enum: CocktailSortBy, default: CocktailSortBy.NAME })
+  sortBy?: CocktailSortBy = CocktailSortBy.NAME;
+
+  @IsOptional()
+  @IsEnum(SortDirection)
+  @ApiPropertyOptional({ enum: SortDirection, default: SortDirection.ASC })
+  sortDirection?: SortDirection = SortDirection.ASC;
 }

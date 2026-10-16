@@ -1,13 +1,24 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsEnum,
   IsInt,
   IsOptional,
   IsString,
   Max,
   Min,
 } from 'class-validator';
+
+export enum IngredientSortBy {
+  NAME = 'name',
+  CREATED_AT = 'createdAt',
+}
+
+export enum SortDirection {
+  ASC = 'asc',
+  DESC = 'desc',
+}
 
 export class QueryIngredientDto {
   @IsOptional()
@@ -39,17 +50,36 @@ export class QueryIngredientDto {
   @IsOptional()
   @IsString()
   @ApiPropertyOptional({
-    description: 'Search term for filtering ingredients by name or description',
-    example: 'vodka',
+    description: 'Filter by ingredient name (case-insensitive)',
+    example: 'wódka',
   })
-  search?: string;
+  name?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by ingredient description (case-insensitive)' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 
   @IsOptional()
-  @Type(() => Boolean)
+  @Transform(({ value }) => {
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    return value;
+  })
   @IsBoolean()
   @ApiPropertyOptional({
     description: 'Filter ingredients by alcoholic content',
     example: true,
   })
   isAlcohol?: boolean;
+
+  @IsOptional()
+  @IsEnum(IngredientSortBy)
+  @ApiPropertyOptional({ enum: IngredientSortBy, default: IngredientSortBy.NAME })
+  sortBy?: IngredientSortBy = IngredientSortBy.NAME;
+
+  @IsOptional()
+  @IsEnum(SortDirection)
+  @ApiPropertyOptional({ enum: SortDirection, default: SortDirection.ASC })
+  sortDirection?: SortDirection = SortDirection.ASC;
 }

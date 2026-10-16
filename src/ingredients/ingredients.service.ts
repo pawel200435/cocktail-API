@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { QueryIngredientDto } from './dto/query-ingredient.dto';
+import { IngredientSortBy, QueryIngredientDto, SortDirection } from './dto/query-ingredient.dto';
 import { Prisma } from '../generated/prisma/client';
 
 @Injectable()
@@ -21,7 +21,7 @@ export class IngredientsService {
   }
 
   async findAll(query: QueryIngredientDto) {
-    const { page = 1, limit = 10, search, isAlcohol } = query;
+    const { page = 1, limit = 10, name, description, isAlcohol, sortBy = IngredientSortBy.NAME, sortDirection = SortDirection.ASC } = query;
     const skip = (page - 1) * limit;
     const where: Prisma.IngredientWhereInput = {};
 
@@ -29,11 +29,12 @@ export class IngredientsService {
       where.isAlcohol = isAlcohol;
     }
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
+    if (name) {
+      where.name = { contains: name, mode: 'insensitive' };
+    }
+
+    if (description) {
+      where.description = { contains: description, mode: 'insensitive' };
     }
 
     const [data, total] = await Promise.all([
@@ -41,6 +42,9 @@ export class IngredientsService {
         where: where,
         skip: skip,
         take: limit,
+        orderBy: {
+          [sortBy]: sortDirection,
+        },
       }),
       this.prisma.ingredient.count({ where }),
     ]);
