@@ -15,7 +15,7 @@ import { IngredientsService } from './ingredients.service';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { QueryIngredientDto } from './dto/query-ingredient.dto';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiConflictResponse } from '@nestjs/swagger';
 
 @ApiTags('ingredients')
 @Controller('ingredients')
@@ -53,6 +53,7 @@ export class IngredientsController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an ingredient by ID' })
   @HttpCode(HttpStatus.NO_CONTENT) // No Content - status code for successful deletion
+  @ApiConflictResponse({ description: 'Cannot delete ingredient because it is referenced by cocktails.' })
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.ingredientsService.remove(id);
   }

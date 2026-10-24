@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateIngredientDto } from './dto/create-ingredient.dto';
 import { UpdateIngredientDto } from './dto/update-ingredient.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -92,6 +92,9 @@ export class IngredientsService {
     try {
       return await this.prisma.ingredient.delete({ where: { id: id } });
     } catch (error) {
+      if(error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new ConflictException(`Cannot delete ingredient with id ${id} because it is referenced by cocktails.`);
+      }
       throw error;
     }
   }
